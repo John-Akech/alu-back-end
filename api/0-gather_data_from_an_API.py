@@ -5,6 +5,8 @@
 import json
 import requests
 from sys import argv
+
+
 if __name__ == "__main__":
     """
         Request user info by employee ID
@@ -19,6 +21,7 @@ if __name__ == "__main__":
         Extract employee name
     """
     employee_name = employee.get("name")
+
     """
         Request user's TODO list
     """
@@ -37,6 +40,7 @@ if __name__ == "__main__":
     """
     for dictionary in employee_todos:
         tasks.update({dictionary.get("title"): dictionary.get("completed")})
+
     """
         Return name, total number of tasks and completed tasks
     """
