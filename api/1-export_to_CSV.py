@@ -1,55 +1,53 @@
 #!/usr/bin/python3
-
-import requests
+"""
+    Python script that exports data in the CSV format
+"""
+import csv
 import json
+import requests
+from sys import argv
 
-def get_employee_todo_progress(employee_id):
-    """
-    Retrieves and exports the TODO list progress of a given employee using a REST 
-    Parameters:
-    - employee_id: int
-        The ID of the employee for whom the TODO list progress is to be retrieved.
-    Raises:
-    - ValueError:
-        Raises an error if the employee ID is not a positive integer.
-    Returns:
-    - None
-        Exports the employee TODO list progress in JSON format.
-    """
-    # Validating the employee ID
-    if not isinstance(employee_id, int) or employee_id <= 0:
-        raise ValueError("Employee ID should be a positive integer.")
-    
-    # Sending a GET request to the API endpoint
-    response = requests.get(f"https://jsonplaceholder.typicode.com/todos?userId=
-{employee_id}")
-    
-    # Checking if the request was successful
-    if response.status_code == 200:
-        todos = response.json()
-        
-        # Creating a dictionary to store the tasks
-        tasks = {"USER_ID": []}
-        
-        # Adding each task to the dictionary
-        for todo in todos:
-            task = {
-                "task": todo['title'],
-                "completed": todo['completed'],
-                "username": todo['username']
-            }
-            tasks["USER_ID"].append(task)
-        
-        # Exporting the tasks to a JSON file
-        filename = f"{employee_id}.json"
-        with open(filename, 'w') as file:
-            json.dump(tasks, file, indent=4)
-        
-        print(f"TODO list for employee ID {employee_id} has been exported to {file
-")
-    else:
-        print(f"Error: Failed to retrieve TODO list for employee ID {employee_id}.
 
-# Example usage:
-employee_id = 1
-get_employee_todo_progress(employee_id)
+if __name__ == "__main__":
+    """
+        Request user info by employee ID
+    """
+    request_employee = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}'.format(argv[1]))
+    """
+        Convert json to dictionary
+    """
+    user = json.loads(request_employee.text)
+    """
+        Extract username
+    """
+    username = user.get("username")
+
+    """
+        Request user's TODO list
+    """
+    request_todos = requests.get(
+        'https://jsonplaceholder.typicode.com/todos?userId={}'.format(argv[1]))
+    """
+        Dictionary to store task status(completed) in boolean format
+    """
+    tasks = {}
+    """
+        Convert json to list of dictionaries
+    """
+    user_todos = json.loads(request_todos.text)
+    """
+        Loop through dictionary & get completed tasks
+    """
+    for dictionary in user_todos:
+        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+
+    """
+        Export to CSV
+    """
+    with open('{}.csv'.format(argv[1]), mode='w', newline='') as file:
+        file_editor = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
+        for k, v in tasks.items():
+            file_editor.writerow([argv[1], username, v, k])
+
+    print('Data exported to {}.csv'.format(argv[1]))

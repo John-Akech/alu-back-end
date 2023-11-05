@@ -1,46 +1,23 @@
-/bin/python3
-
-import requests
+#!/usr/bin/python3
+"""
+    python script that exports data in the JSON format
+"""
 import json
+import requests
 
-def get_employee_todo_progress():
+if __name__ == "__main__":
+    url = "https://jsonplaceholder.typicode.com/"
+    users = requests.get(url + "users").json()
     """
-    Retrieves and exports the TODO list progress of all employees using a REST API.
-    Returns:
-    - None
-        Exports the employee TODO list progress of all employees in JSON format.
+        export to JSON
     """
-    # Sending a GET request to the API endpoint
-    response = requests.get("https://jsonplaceholder.typicode.com/todos")
-    
-    # Checking if the request was successful
-    if response.status_code == 200:
-        todos = response.json()
-        
-        # Creating a dictionary to store the tasks
-        tasks = {}
-        
-        # Adding each task to the dictionary
-        for todo in todos:
-            employee_id = str(todo['userId'])
-            if employee_id not in tasks:
-                tasks[employee_id] = []
-            
-            task = {
-                "username": todo['username'],
-                "task": todo['title'],
-                "completed": todo['completed']
-            }
-            tasks[employee_id].append(task)
-        
-        # Exporting the tasks to a JSON file
-        filename = "todo_all_employees.json"
-        with open(filename, 'w') as file:
-            json.dump(tasks, file, indent=4)
-        
-        print(f"TODO list for all employees has been exported to {filename}.")
-    else:
-        print("Error: Failed to retrieve TODO list for all employees.")
 
-# Example usage:
-get_employee_todo_progress()
+    with open("todo_all_employees.json", "w") as jsonfile:
+        json.dump({
+            u.get("id"): [{
+                "task": t.get("title"),
+                "completed": t.get("completed"),
+                "username": u.get("username")
+            } for t in requests.get(url + "todos",
+                                    params={"userId": u.get("id")}).json()]
+            for u in users}, jsonfile)
