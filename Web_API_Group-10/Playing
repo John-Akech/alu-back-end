@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+import requests
+
+# Constants
+LOVE_CALCULATOR_URL = "https://love-calculator.p.rapidapi.com/getPercentage"
+API_KEY = "eef12ab772msh348ca4b570a2d40p1a8bebjsnb89ddad0869b"
+API_HOST = "love-calculator.p.rapidapi.com"
+
+def get_love_percentage(url, headers, params):
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
+        return response.json()
+
+    except requests.exceptions.RequestException as err:
+        print(f"Error making request: {err}")
+        return None
+
+def main():
+    # Get user input for names
+    fname = input("Enter the first name: ")
+    sname = input("Enter the second name: ")
+
+    # Set up API request
+    query_params = {"fname": fname, "sname": sname}
+    headers = {"X-RapidAPI-Key": API_KEY, "X-RapidAPI-Host": API_HOST}
+
+    # Make API request
+    love_percentage_data = get_love_percentage(LOVE_CALCULATOR_URL, headers, query_params)
+
+    # Display results
+    if love_percentage_data:
+        print("Love Percentage Data:")
+        print(f"Percentage: {love_percentage_data.get('percentage')}%")
+        print(f"Result: {love_percentage_data.get('result')}")
+    else:
+        print("Failed to retrieve love percentage data.")
+
+if __name__ == "__main__":
+    main()
